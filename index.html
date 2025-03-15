@@ -97,10 +97,6 @@
             box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
         }
         
-        button:active {
-            transform: translateY(0);
-        }
-        
         .result-container {
             margin-top: 30px;
             display: none;
@@ -110,7 +106,6 @@
             background: linear-gradient(90deg, #f5f7fa 0%, #e8eaec 100%);
             padding: 20px;
             border-radius: 10px;
-            overflow: hidden;
         }
         
         .result-title {
@@ -130,10 +125,6 @@
             border-bottom: 1px solid #ddd;
         }
         
-        .steps {
-            margin-top: 15px;
-        }
-        
         .step {
             padding: 10px 0;
             display: flex;
@@ -151,13 +142,11 @@
             align-items: center;
             font-size: 12px;
             margin-right: 10px;
-            flex-shrink: 0;
         }
         
         .step-text {
             font-size: 14px;
             color: #444;
-            line-height: 1.5;
         }
         
         .error {
@@ -167,16 +156,6 @@
             font-size: 14px;
             display: none;
         }
-        
-        @media (max-width: 600px) {
-            .input-group {
-                flex-direction: column;
-            }
-            
-            .calculator {
-                padding: 20px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -185,129 +164,54 @@
         <p class="subtitle">Greatest Common Divisor with Step-by-Step Process</p>
         
         <div class="input-group">
-            <div class="input-field">
-                <label for="num1">First Number</label>
-                <input type="number" id="num1" placeholder="Enter first number">
-            </div>
-            <div class="input-field">
-                <label for="num2">Second Number</label>
-                <input type="number" id="num2" placeholder="Enter second number">
-            </div>
+            <input type="number" id="num1" placeholder="Enter first number">
+            <input type="number" id="num2" placeholder="Enter second number">
         </div>
         
         <button id="calculate">Calculate GCD</button>
-        
-        <div class="error" id="error-message">Please enter valid positive integers</div>
+        <div class="error" id="error-message"></div>
         
         <div class="result-container" id="result-container">
             <div class="result">
                 <h3 class="result-title">Result</h3>
-                <div class="final-result" id="final-result">GCD = 12</div>
-                
-                <h4 class="result-title">Step-by-Step Calculation</h4>
-                <div class="steps" id="steps">
-                    <!-- Steps will be added here dynamically -->
-                </div>
+                <div class="final-result" id="final-result"></div>
+                <h4 class="result-title">Steps</h4>
+                <div id="steps"></div>
             </div>
         </div>
     </div>
     
     <script>
-        document.getElementById('calculate').addEventListener('click', calculateGCD);
-        
-        function calculateGCD() {
-            // Get input values
-            const num1Input = document.getElementById('num1').value.trim();
-            const num2Input = document.getElementById('num2').value.trim();
-            
-            // Get elements
+        document.getElementById('calculate').addEventListener('click', function() {
+            const num1 = parseInt(document.getElementById('num1').value);
+            const num2 = parseInt(document.getElementById('num2').value);
             const errorMessage = document.getElementById('error-message');
             const resultContainer = document.getElementById('result-container');
             const finalResult = document.getElementById('final-result');
             const stepsContainer = document.getElementById('steps');
             
-            // Hide previous results and errors
-            errorMessage.style.display = 'none';
-            resultContainer.style.display = 'none';
-            
-            // Validate input
-            if (!num1Input || !num2Input) {
-                errorMessage.textContent = 'Please enter both numbers';
-                errorMessage.style.display = 'block';
-                return;
-            }
-            
-            const num1 = parseInt(num1Input);
-            const num2 = parseInt(num2Input);
-            
-            if (isNaN(num1) || isNaN(num2) || num1 <= 0 || num2 <= 0 || !Number.isInteger(num1) || !Number.isInteger(num2)) {
+            if (!num1 || !num2 || num1 <= 0 || num2 <= 0) {
                 errorMessage.textContent = 'Please enter valid positive integers';
                 errorMessage.style.display = 'block';
+                resultContainer.style.display = 'none';
                 return;
             }
             
-            // Clear previous steps
+            errorMessage.style.display = 'none';
             stepsContainer.innerHTML = '';
             
-            // Calculate GCD using Euclidean algorithm
-            const { gcd, steps } = euclideanGCD(num1, num2);
-            
-            // Display the result
-            finalResult.textContent = `GCD(${num1}, ${num2}) = ${gcd}`;
-            
-            // Display steps
-            steps.forEach((step, index) => {
-                const stepElement = document.createElement('div');
-                stepElement.className = 'step';
-                stepElement.innerHTML = `
-                    <div class="step-number">${index + 1}</div>
-                    <div class="step-text">${step}</div>
-                `;
-                stepsContainer.appendChild(stepElement);
-            });
-            
-            // Show result container
-            resultContainer.style.display = 'block';
-        }
-        
-        function euclideanGCD(a, b) {
-            let steps = [];
-            let originalA = a;
-            let originalB = b;
-            
-            steps.push(`Start with numbers a = ${a} and b = ${b}`);
-            
-            // Make sure a is greater than or equal to b
-            if (a < b) {
-                [a, b] = [b, a]; // Swap values
-                steps.push(`Swap numbers so that a ≥ b: a = ${a}, b = ${b}`);
-                originalA = a;
-                originalB = b;
-            }
-            
-            let remainders = [];
-            let quotients = [];
-            
+            let a = num1, b = num2;
             while (b !== 0) {
-                const quotient = Math.floor(a / b);
-                const remainder = a % b;
-                
-                quotients.push(quotient);
-                remainders.push(remainder);
-                
-                steps.push(`Divide ${a} by ${b}: ${a} = ${b} × ${quotient} + ${remainder}`);
-                
+                let q = Math.floor(a / b);
+                let r = a % b;
+                stepsContainer.innerHTML += `<div class='step'><div class='step-number'>•</div><div class='step-text'>${a} = ${b} × ${q} + ${r}</div></div>`;
                 a = b;
-                b = remainder;
+                b = r;
             }
             
-            steps.push(`Since the remainder is 0, the GCD is ${a}`);
-            
-            // Add verification step
-            steps.push(`Verification: ${originalA} and ${originalB} are both divisible by ${a}, and this is the largest such number.`);
-            
-            return { gcd: a, steps };
-        }
+            finalResult.textContent = `GCD(${num1}, ${num2}) = ${a}`;
+            resultContainer.style.display = 'block';
+        });
     </script>
 </body>
 </html>
